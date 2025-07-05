@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📒 My Notebook</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #f5f7fa;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --text-color: #333;
+            --border-color: #ddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 15px;
+            max-width: 100%;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px; /* Reduced margin */
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+            flex-direction: column;
+        }
+        
+        h1 {
+            cursor: pointer;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .creator-credit {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .note-area {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin: 5px 0;
+            width: 100%;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-title {
+            margin-bottom: 15px;
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+        }
+        
+        .pin-input {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .pin-input input {
+            width: 45px;
+            height: 55px;
+            font-size: 22px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .vault-container {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: var(--secondary-color);
+        }
+        
+        .upload-area p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        
+        .upload-area small {
+            font-size: 0.8rem;
+        }
+        
+        .file-list {
+            margin-top: 15px;
+        }
+        
+        .file-item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 8px;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+        }
+        
+        .file-icon {
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+        
+        .file-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.9rem;
+        }
+        
+        .file-size {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            align-self: flex-end;
+        }
+        
+        .file-actions button {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            width: auto;
+        }
+        
+        .logout-btn {
+            margin-top: 15px;
+        }
+        
+        .biometric-btn {
+            background-color: #2ecc71;
+            margin-top: 10px;
+        }
+        
+        .change-pin-btn {
+            background-color: var(--warning-color);
+            margin-top: 10px;
+        }
+        
+        .notes-container {
+            display: block;
+        }
+        
+        .settings-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            display: none; /* Hidden by default */
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        @media (min-width: 600px) {
+            body {
+                padding: 20px;
+            }
+            
+            header {
+                flex-direction: row;
+                margin-bottom: 15px;
+            }
+            
+            .creator-credit {
+                text-align: left;
+                margin-left: 10px;
+            }
+            
+            .note-area {
+                padding: 20px;
+            }
+            
+            .file-item {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .file-actions {
+                margin-left: auto;
+            }
+            
+            .modal-actions {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            button {
+                width: auto;
+                margin: 0;
+            }
+            
+            .upload-area {
+                min-height: 100px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 id="notebook-title">📒 My Notebook</h1>
+        <div class="creator-credit">Made By Zishan</div>
+        <button id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
+    </header>
+    
+    <div id="notes-container" class="notes-container">
+        <div class="note-area">
+            <h2>Notes</h2>
+            <textarea id="notes" placeholder="Write your notes here..."></textarea>
+            <button id="save-notes">Save Notes</button>
+        </div>
+    </div>
+    
+    <!-- PIN Entry Modal -->
+    <div id="pin-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Enter Vault PIN</h2>
+            <div class="pin-input">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric" autofocus>
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            </div>
+            <div class="modal-actions">
+                <button id="unlock-btn">Unlock</button>
+                <button id="cancel-pin">Cancel</button>
+            </div>
+            <button id="biometric-btn" class="biometric-btn">Use Fingerprint/Face ID</button>
+        </div>
+    </div>
+    
+    <!-- Change PIN Modal -->
+    <div id="change-pin-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Change PIN</h2>
+            <p>Enter current PIN:</p>
+            <div class="pin-input current-pin">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric" autofocus>
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            </div>
+            <p>Enter new PIN:</p>
+            <div class="pin-input new-pin">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="password" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            </div>
+            <div class="modal-actions">
+                <button id="confirm-pin-change" class="btn-success">Change PIN</button>
+                <button id="cancel-pin-change">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Settings</h2>
+            <button id="change-pin-btn" class="change-pin-btn">Change PIN</button>
+            <button id="close-settings">Close</button>
+        </div>
+    </div>
+    
+    <div id="vault-container" class="vault-container">
+        <div class="note-area">
+            <h2>Secure Vault</h2>
+            
+            <div id="upload-area" class="upload-area">
+                <p>Drag & drop files here or click to browse</p>
+                <p><small>Supports files (PDF, DOCX, images, etc.)</small></p>
+                <input type="file" id="file-input" multiple style="display: none;">
+            </div>
+            
+            <div class="file-options" style="margin-bottom: 10px;">
+                <button id="upload-file-btn">Upload Files</button>
+            </div>
+            
+            <div class="file-list" id="file-list">
+                <!-- Files will be listed here -->
+            </div>
+            
+            <button id="logout-btn" class="logout-btn">🔓 Logout Vault</button>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const notebookTitle = document.getElementById('notebook-title');
+        const pinModal = document.getElementById('pin-modal');
+        const pinInputs = document.querySelectorAll('#pin-modal .pin-input input');
+        const unlockBtn = document.getElementById('unlock-btn');
+        const cancelPinBtn = document.getElementById('cancel-pin');
+        const biometricBtn = document.getElementById('biometric-btn');
+        const vaultContainer = document.getElementById('vault-container');
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const uploadFileBtn = document.getElementById('upload-file-btn');
+        const fileList = document.getElementById('file-list');
+        const logoutBtn = document.getElementById('logout-btn');
+        const notesTextarea = document.getElementById('notes');
+        const saveNotesBtn = document.getElementById('save-notes');
+        const notesContainer = document.getElementById('notes-container');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const changePinBtn = document.getElementById('change-pin-btn');
+        const closeSettingsBtn = document.getElementById('close-settings');
+        const changePinModal = document.getElementById('change-pin-modal');
+        const currentPinInputs = document.querySelectorAll('#change-pin-modal .current-pin input');
+        const newPinInputs = document.querySelectorAll('#change-pin-modal .new-pin input');
+        const confirmPinChangeBtn = document.getElementById('confirm-pin-change');
+        const cancelPinChangeBtn = document.getElementById('cancel-pin-change');
+        
+        // Constants
+        const DEFAULT_PIN = '1234';
+        const VAULT_KEY = 'secure_vault_data';
+        const NOTES_KEY = 'notes_data';
+        
+        // State
+        let vaultData = {
+            files: [],
+            pin: DEFAULT_PIN
+        };
+        
+        // Initialize the app
+        function init() {
+            loadNotes();
+            loadVaultData();
+            setupEventListeners();
+        }
+        
+        // Load notes from localStorage
+        function loadNotes() {
+            const savedNotes = localStorage.getItem(NOTES_KEY);
+            if (savedNotes) {
+                notesTextarea.value = savedNotes;
+            }
+        }
+        
+        // Load vault data from localStorage
+        function loadVaultData() {
+            const savedVault = localStorage.getItem(VAULT_KEY);
+            if (savedVault) {
+                try {
+                    vaultData = JSON.parse(savedVault);
+                } catch (e) {
+                    console.error('Failed to parse vault data', e);
+                }
+            }
+        }
+        
+        // Save vault data to localStorage
+        function saveVaultData() {
+            localStorage.setItem(VAULT_KEY, JSON.stringify(vaultData));
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Notebook title click to show vault
+            notebookTitle.addEventListener('click', showPinModal);
+            
+            // Settings button (only visible in vault)
+            settingsBtn.addEventListener('click', () => {
+                settingsModal.style.display = 'flex';
+            });
+            
+            // Close settings
+            closeSettingsBtn.addEventListener('click', () => {
+                settingsModal.style.display = 'none';
+            });
+            
+            // Change PIN button
+            changePinBtn.addEventListener('click', () => {
+                settingsModal.style.display = 'none';
+                showChangePinModal();
+            });
+            
+            // PIN input handling with automatic focus switching
+            function setupPinInputBehavior(inputs) {
+                inputs.forEach((input, index) => {
+                    input.addEventListener('input', (e) => {
+                        if (e.inputType === 'insertText' && e.data.match(/[0-9]/)) {
+                            input.value = e.data;
+                            if (index < inputs.length - 1) {
+                                inputs[index + 1].focus();
+                            }
+                        }
+                    });
+                    
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Backspace' && !input.value && index > 0) {
+                            inputs[index - 1].focus();
+                        }
+                    });
+                });
+            }
+            
+            setupPinInputBehavior(pinInputs);
+            setupPinInputBehavior(currentPinInputs);
+            setupPinInputBehavior(newPinInputs);
+            
+            // Unlock button
+            unlockBtn.addEventListener('click', unlockVault);
+            
+            // Cancel button
+            cancelPinBtn.addEventListener('click', hidePinModal);
+            
+            // Biometric button
+            biometricBtn.addEventListener('click', unlockWithBiometric);
+            
+            // File upload handling
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--primary-color)';
+                uploadArea.style.backgroundColor = 'var(--secondary-color)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border-color)';
+                uploadArea.style.backgroundColor = 'white';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border-color)';
+                uploadArea.style.backgroundColor = 'white';
+                
+                if (e.dataTransfer.items) {
+                    handleFiles(Array.from(e.dataTransfer.items).map(item => item.getAsFile()));
+                } else {
+                    handleFiles(Array.from(e.dataTransfer.files));
+                }
+            });
+            
+            // File input button
+            uploadFileBtn.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    handleFiles(Array.from(fileInput.files));
+                }
+            });
+            
+            // Logout button
+            logoutBtn.addEventListener('click', logoutVault);
+            
+            // Notes save
+            saveNotesBtn.addEventListener('click', saveNotes);
+            
+            // Confirm PIN change
+            confirmPinChangeBtn.addEventListener('click', changePin);
+            
+            // Cancel PIN change
+            cancelPinChangeBtn.addEventListener('click', hideChangePinModal);
+        }
+        
+        // Show PIN modal
+        function showPinModal() {
+            pinModal.style.display = 'flex';
+            pinInputs[0].focus();
+            pinInputs.forEach(input => input.value = '');
+        }
+        
+        // Hide PIN modal
+        function hidePinModal() {
+            pinModal.style.display = 'none';
+        }
+        
+        // Show Change PIN modal
+        function showChangePinModal() {
+            changePinModal.style.display = 'flex';
+            currentPinInputs[0].focus();
+            currentPinInputs.forEach(input => input.value = '');
+            newPinInputs.forEach(input => input.value = '');
+        }
+        
+        // Hide Change PIN modal
+        function hideChangePinModal() {
+            changePinModal.style.display = 'none';
+        }
+        
+        // Get entered PIN from specific inputs
+        function getEnteredPin(inputs) {
+            return Array.from(inputs).map(input => input.value).join('');
+        }
+        
+        // Change PIN
+        function changePin() {
+            const currentPin = getEnteredPin(currentPinInputs);
+            const newPin = getEnteredPin(newPinInputs);
+            
+            if (currentPin !== vaultData.pin) {
+                alert('Current PIN is incorrect');
+                currentPinInputs[0].focus();
+                return;
+            }
+            
+            if (newPin.length !== 4) {
+                alert('New PIN must be 4 digits');
+                newPinInputs[0].focus();
+                return;
+            }
+            
+            vaultData.pin = newPin;
+            saveVaultData();
+            alert('PIN changed successfully!');
+            hideChangePinModal();
+        }
+        
+        // Unlock vault with PIN
+        function unlockVault() {
+            const enteredPin = getEnteredPin(pinInputs);
+            
+            if (enteredPin === vaultData.pin) {
+                hidePinModal();
+                showVault();
+            } else {
+                alert('Incorrect PIN. Try again.');
+                pinInputs.forEach(input => input.value = '');
+                pinInputs[0].focus();
+            }
+        }
+        
+        // Unlock with biometric authentication
+        async function unlockWithBiometric() {
+            if (!window.PublicKeyCredential) {
+                alert('Biometric authentication not supported in this browser');
+                return;
+            }
+            
+            try {
+                // In a real app, you would have proper WebAuthn credentials setup
+                // This is a simplified version for demonstration
+                const credential = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                        allowCredentials: [],
+                        userVerification: 'required'
+                    }
+                });
+                
+                // If we get here, authentication was successful
+                hidePinModal();
+                showVault();
+            } catch (err) {
+                console.error('Biometric authentication failed:', err);
+                alert('Biometric authentication failed. Try using PIN instead.');
+            }
+        }
+        
+        // Show vault content
+        function showVault() {
+            vaultContainer.style.display = 'block';
+            notesContainer.style.display = 'none';
+            settingsBtn.style.display = 'block'; // Show settings button in vault
+            renderFileList();
+        }
+        
+        // Logout from vault
+        function logoutVault() {
+            vaultContainer.style.display = 'none';
+            notesContainer.style.display = 'block';
+            settingsBtn.style.display = 'none'; // Hide settings button when logged out
+        }
+        
+        // Handle uploaded files
+        function handleFiles(files) {
+            files.forEach(file => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const fileData = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        lastModified: file.lastModified,
+                        data: e.target.result.split(',')[1], // Remove data URL prefix
+                        path: file.webkitRelativePath || ''
+                    };
+                    
+                    vaultData.files.push(fileData);
+                    saveVaultData();
+                    renderFileList();
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Render file list
+        function renderFileList() {
+            fileList.innerHTML = '';
+            
+            if (vaultData.files.length === 0) {
+                fileList.innerHTML = '<div class="empty-state">No files in vault yet. Upload some files to get started.</div>';
+                return;
+            }
+            
+            vaultData.files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileIcon = getFileIcon(file.type);
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-icon">${fileIcon}</span>
+                        <div style="overflow: hidden;">
+                            <div class="file-name" title="${file.name}">${file.path ? file.path + '/' : ''}${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)} • ${new Date(file.lastModified).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="view-file" data-index="${index}">View</button>
+                        <button class="download-file btn-success" data-index="${index}">Download</button>
+                        <button class="delete-file btn-danger" data-index="${index}">Delete</button>
+                    </div>
+                `;
+                
+                fileList.appendChild(fileItem);
+            });
+            
+            // Add event listeners to the new buttons
+            document.querySelectorAll('.view-file').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    viewFile(index);
+                });
+            });
+            
+            document.querySelectorAll('.download-file').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    downloadFile(index);
+                });
+            });
+            
+            document.querySelectorAll('.delete-file').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    deleteFile(index);
+                });
+            });
+        }
+        
+        // View file (opens in browser if possible)
+        function viewFile(index) {
+            const file = vaultData.files[index];
+            const dataUrl = `data:${file.type};base64,${file.data}`;
+            
+            if (file.type.startsWith('image/') || 
+                file.type === 'application/pdf' || 
+                file.type === 'text/plain' || 
+                file.type.includes('html') || 
+                file.type.includes('xml')) {
+                // For viewable files, open in new tab
+                const newWindow = window.open();
+                newWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>${file.name}</title>
+                        <style>
+                            body { margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+                            img, pdf { max-width: 100%; max-height: 90vh; }
+                        </style>
+                    </head>
+                    <body>
+                        ${file.type.startsWith('image/') ? `<img src="${dataUrl}" alt="${file.name}">` : ''}
+                        ${file.type === 'application/pdf' ? `<embed src="${dataUrl}" type="application/pdf" width="100%" height="600px">` : ''}
+                        ${file.type === 'text/plain' ? `<pre style="white-space: pre-wrap;">${atob(file.data)}</pre>` : ''}
+                    </body>
+                    </html>
+                `);
+            } else {
+                // For non-viewable files, show message and offer download
+                if (confirm('This file type cannot be viewed directly. Would you like to download it instead?')) {
+                    downloadFile(index);
+                }
+            }
+        }
+        
+        // Download file
+        function downloadFile(index) {
+            const file = vaultData.files[index];
+            const dataUrl = `data:${file.type};base64,${file.data}`;
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = file.name;
+            a.click();
+        }
+        
+        // Delete file
+        function deleteFile(index) {
+            if (confirm('Are you sure you want to delete this file?')) {
+                vaultData.files.splice(index, 1);
+                saveVaultData();
+                renderFileList();
+            }
+        }
+        
+        // Get file icon based on type
+        function getFileIcon(type) {
+            if (type.startsWith('image/')) return '🖼️';
+            if (type === 'application/pdf') return '📄';
+            if (type.includes('word') || type.includes('document')) return '📝';
+            if (type.includes('spreadsheet') || type.includes('excel')) return '📊';
+            if (type.includes('zip') || type.includes('compressed')) return '🗜️';
+            return '📁';
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Save notes
+        function saveNotes() {
+            localStorage.setItem(NOTES_KEY, notesTextarea.value);
+            alert('Notes saved!');
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
